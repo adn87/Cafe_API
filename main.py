@@ -1,5 +1,4 @@
 import random
-
 from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
@@ -54,13 +53,13 @@ def home():
 @app.route('/random')
 def get_random_cafe():
     result = db.session.execute(db.select(Cafe))
-    all_cafes = result.scalars().all
+    all_cafes = result.scalars().all()
     random_cafe = random.choice(all_cafes)
-    return jsonify(Cafe=random_cafe.to_dict())
+    return jsonify(cafe=random_cafe.to_dict())
 
 
-@app.route('/all', methods=["GET", "POST"])
-def all():
+@app.route('/all')
+def get_all():
     result = db.session.execute(db.select(Cafe).order_by(Cafe.name))
     all_cafes = result.scalars().all()
     return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
@@ -75,6 +74,28 @@ def search():
         return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
     else:
         return jsonify(error={"Not Found": "Sorry, we don't have a cafe at that location."}), 404
+
+
+@app.route("/add", methods=["GET","POST"])
+def add_cafe():
+    new_cafe=Cafe(
+        name=request.form.get("name"),
+        map_url=request.form.get("map_url"),
+        img_url=request.form.get("img_url"),
+        location=request.form.get("location"),
+        has_sockets=bool(request.form.get("sockets")),
+        has_toilet=bool(request.form.get("toilet")),
+        has_wifi=bool(request.form.get("wifi")),
+        can_take_calls=bool(request.form.get("calls")),
+        seats=request.form.get("seats"),
+        coffee_price=request.form.get("coffee_price"),
+
+    )
+
+    db.session.add(new_cafe)
+    db.session.commit()
+    return jsonify(response={"Success": "Successfully added the new cafe. "})
+
 
 # HTTP GET - Read Record
 
