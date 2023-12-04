@@ -104,11 +104,25 @@ def patch_new_price(cafe_id):
     if cafe:
         cafe.coffee_price = new_price
         db.session.commit()
-        ## Just add the code after the jsonify method. 200 = Ok
         return jsonify(response={"success": "Successfully updated the price."}), 200
     else:
-        #404 = Resource not found
+        # 404 = Resource not found
         return jsonify(error={"Not Found": "Sorry a cafe with that id was not found in the database."}), 404
+
+
+@app.route("/report-closed/<int:cafe_id>", methods=["DELETE"])
+def delete_cafe(cafe_id):
+    api_key = request.args.get("api-key")
+    if api_key == "TopSecretAPIKey":
+        cafe = db.get_or_404(Cafe, cafe_id)
+        if cafe:
+            db.session.delete(cafe)
+            db.session.commit()
+            return jsonify(response={"success": "Successfully deleted the cafe from the database."}), 200
+        else:
+            return jsonify(error={"Not Found": "Sorry a cafe with that id was not found in the database."}), 404
+    else:
+        return jsonify(error={"Forbidden": "Sorry, that's not allowed. Make sure you have the correct api_key."}), 403
 
 
 # HTTP GET - Read Record
