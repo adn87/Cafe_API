@@ -76,9 +76,9 @@ def search():
         return jsonify(error={"Not Found": "Sorry, we don't have a cafe at that location."}), 404
 
 
-@app.route("/add", methods=["GET","POST"])
+@app.route("/add", methods=["GET", "POST"])
 def add_cafe():
-    new_cafe=Cafe(
+    new_cafe = Cafe(
         name=request.form.get("name"),
         map_url=request.form.get("map_url"),
         img_url=request.form.get("img_url"),
@@ -95,6 +95,20 @@ def add_cafe():
     db.session.add(new_cafe)
     db.session.commit()
     return jsonify(response={"Success": "Successfully added the new cafe. "})
+
+
+@app.route("/update-price/<int:cafe_id>", methods=["PATCH"])
+def patch_new_price(cafe_id):
+    new_price = request.args.get("new_price")
+    cafe = db.get_or_404(Cafe, cafe_id)
+    if cafe:
+        cafe.coffee_price = new_price
+        db.session.commit()
+        ## Just add the code after the jsonify method. 200 = Ok
+        return jsonify(response={"success": "Successfully updated the price."}), 200
+    else:
+        #404 = Resource not found
+        return jsonify(error={"Not Found": "Sorry a cafe with that id was not found in the database."}), 404
 
 
 # HTTP GET - Read Record
